@@ -36,7 +36,7 @@ jobs:
       # Step 4: Deploy website files to S3
       - name: Deploy Website to S3
         run: |
-          aws s3 sync ./ s3://${{ vars.S3_BUCKET_NAME }}/ \
+          aws s3 sync ./ s3://${{ vars.S3_BUCKET_NAME }} \
             --delete \
             --exclude ".git/*" \
             --exclude ".github/*" \
