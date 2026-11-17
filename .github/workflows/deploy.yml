@@ -1,0 +1,47 @@
+
+name: Deploy Static Website to AWS S3
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Website
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Get source code from GitHub
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      # Step 2: Authenticate with AWS using OIDC
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Step 3: Verify AWS authentication
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+
+      # Step 4: Deploy website files to S3
+      - name: Deploy Website to S3
+        run: |
+          aws s3 sync ./ s3://${{ vars.S3_BUCKET_NAME }}/ \
+            --delete \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude "README.md"
+
+      # Step 5: Deployment completed
+      - name: Deployment Complete
+        run: echo "Website successfully deployed to AWS S3!"
